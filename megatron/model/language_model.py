@@ -9,8 +9,7 @@ from megatron import get_args
 from megatron.core import mpu, tensor_parallel
 from megatron.core.enums import ModelType
 from megatron.core.models.common.rotary_pos_embedding import RotaryEmbedding
-
-from .enums import AttnMaskType, LayerType
+from .enums import AttnMaskType, LayerType, PositionEmbeddingType
 from .module import MegatronModule
 from .transformer import ParallelTransformer
 from .utils import get_linear_layer
@@ -371,9 +370,8 @@ class TransformerLanguageModel(MegatronModule):
             self._embedding_key = 'embedding'
 
         # Rotary positional embeddings
-        self.use_rotary_position_embeddings = \
-            args.position_embedding_type == 'rope'
-        if self.use_rotary_position_embeddings:
+        self.position_embedding_type = args.position_embedding_type
+        if args.position_embedding_type is PositionEmbeddingType.rotary:
             self.seq_length = args.seq_length
             rotary_dim = args.hidden_size // args.num_attention_heads \
                 if args.kv_channels is None else args.kv_channels
@@ -485,7 +483,7 @@ class TransformerLanguageModel(MegatronModule):
 
         # Rotary positional embeddings
         rotary_pos_emb = None
-        if self.use_rotary_position_embeddings:
+        if self.position_embedding_type is PositionEmbeddingType.rotary:
             if inference_params is not None:
                 rotary_pos_emb = \
                     self.rotary_pos_emb(inference_params.max_sequence_len)
