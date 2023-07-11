@@ -51,6 +51,7 @@ OUTPUT_ARGS="
 "
 
 # Intended for use on 2 A10 GPUs
+#--use-flash-attn will not work on A10 gpus when using a head dim of 128D.
 torchrun $DISTRIBUTED_ARGS pretrain_gpt.py \
     --tensor-model-parallel-size 2 \
     --pipeline-model-parallel-size 2 \
@@ -60,7 +61,6 @@ torchrun $DISTRIBUTED_ARGS pretrain_gpt.py \
     --recompute-num-layers 1 \
     --use-distributed-optimizer \
     --use-cpu-initialization \
-    --use-flash-attn \
     $GPT_ARGS \
     $DATA_ARGS \
     $OUTPUT_ARGS \
